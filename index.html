@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yp! — App Developer</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #000000;
+  --surface: rgba(28, 28, 30, 0.72);
+  --surface-hover: rgba(38, 38, 40, 0.8);
+  --text: #f5f5f7;
+  --text-secondary: #86868b;
+  --text-tertiary: #6e6e73;
+  --blue: #2997ff;
+  --blue-glow: rgba(41, 151, 255, 0.12);
+  --separator: rgba(255, 255, 255, 0.08);
+  --radius: 20px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== NAV ===== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 0 max(22px, env(safe-area-inset-left));
+  height: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  background: rgba(0, 0, 0, 0.72);
+  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+}
+
+.logo {
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+.logo:hover { opacity: 0.7; }
+
+.nav-links { display: flex; gap: 28px; align-items: center; }
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 400;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--text); }
+
+/* ===== HERO ===== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 120px 24px 80px;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 800px; height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(41,151,255,0.08) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: breathe 8s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+.hero h1 {
+  font-weight: 700;
+  font-size: clamp(48px, 10vw, 96px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin-bottom: 20px;
+  position: relative; z-index: 1;
+}
+
+.hero h1 .line { display: block; overflow: hidden; }
+
+.hero h1 .line span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(100%);
+  animation: textReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero h1 .line:nth-child(1) span { animation-delay: 0.2s; }
+.hero h1 .line:nth-child(2) span { animation-delay: 0.35s; }
+
+@keyframes textReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hero h1 .highlight {
+  background: linear-gradient(90deg, #2997ff, #5ac8fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: clamp(17px, 2vw, 21px);
+  color: var(--text-secondary);
+  max-width: 460px;
+  line-height: 1.5;
+  font-weight: 400;
+  position: relative; z-index: 1;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards;
+}
+
+.hero-cta {
+  margin-top: 36px;
+  position: relative; z-index: 1;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.8s forwards;
+}
+
+.hero-cta a {
+  color: var(--blue);
+  font-size: 21px;
+  font-weight: 400;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: gap 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-cta a:hover { gap: 10px; }
+
+.hero-scroll {
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: fadeUp 0.8s 1.2s forwards;
+}
+
+.scroll-indicator {
+  width: 24px; height: 40px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.scroll-dot {
+  width: 3px; height: 8px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 2px;
+  animation: scrollBounce 2s infinite;
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(10px); opacity: 0.2; }
+}
+
+/* ===== SECTIONS ===== */
+section {
+  padding: 100px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.section-eyebrow {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 8px;
+  opacity: 0; transform: translateY(20px);
+}
+
+.section-headline {
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 56px);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  text-align: center;
+  margin-bottom: 8px;
+  opacity: 0; transform: translateY(20px);
+}
+
+.section-sub {
+  font-size: clamp(17px, 2vw, 21px);
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 64px;
+  line-height: 1.5;
+  font-weight: 400;
+  opacity: 0; transform: translateY(20px);
+}
+
+/* ===== DIVIDERS ===== */
+.divider {
+  height: 1px;
+  background: var(--separator);
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* ===== APP CARDS ===== */
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.app-card {
+  position: relative;
+  background: var(--surface);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  overflow: hidden;
+  cursor: default;
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.4s, border-color 0.4s;
+}
+
+.app-card:hover {
+  transform: translateY(-2px) scale(1) !important;
+  background: var(--surface-hover);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.app-icon {
+  width: 64px; height: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.app-card:hover .app-icon { transform: scale(1.06); }
+
+.app-icon img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.app-name {
+  font-weight: 600;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.app-desc {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+
+.app-links { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.store-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 980px;
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.store-btn:hover {
+  background: var(--blue-glow);
+  border-color: rgba(41,151,255,0.3);
+}
+
+.store-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ===== STATS ===== */
+.stats-section {
+  padding: 80px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.stats-grid {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+  opacity: 0; transform: translateY(20px);
+}
+
+.stat-number {
+  font-weight: 700;
+  font-size: clamp(44px, 6vw, 64px);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 4px;
+  background: linear-gradient(180deg, var(--text) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ===== ABOUT ===== */
+.about-content {
+  max-width: 660px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.about-text {
+  font-size: clamp(19px, 2.5vw, 24px);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 400;
+  opacity: 0; transform: translateY(20px);
+}
+
+.about-text strong { color: var(--text); font-weight: 600; }
+
+.about-text em {
+  background: linear-gradient(90deg, #2997ff, #5ac8fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* ===== TECH STRIP ===== */
+.tech-strip { padding: 48px 24px; overflow: hidden; }
+
+.tech-track {
+  display: flex;
+  gap: 48px;
+  animation: marquee 25s linear infinite;
+  width: max-content;
+}
+
+.tech-item {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.tech-item::after {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  opacity: 0.4;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ===== CONTACT ===== */
+.contact-section {
+  text-align: center;
+  padding: 120px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: rgba(41, 151, 255, 0.1);
+  border: 0.5px solid rgba(41, 151, 255, 0.25);
+  border-radius: 980px;
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.email-btn:hover {
+  background: rgba(41, 151, 255, 0.18);
+  border-color: rgba(41, 151, 255, 0.4);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(41, 151, 255, 0.12);
+}
+
+/* ===== FOOTER ===== */
+footer {
+  padding: 20px 24px;
+  border-top: 0.5px solid var(--separator);
+}
+
+.footer-content {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-text {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.footer-logo {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: var(--text-tertiary);
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover { color: var(--text); }
+
+/* ===== MODALS ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: #1c1c1e;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.modal-overlay.active .modal {
+  transform: scale(1) translateY(0);
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, color 0.3s;
+}
+
+.modal-close:hover {
+  background: rgba(255,255,255,0.15);
+  color: var(--text);
+}
+
+.modal h2 {
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+.modal h3 {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+  margin-top: 20px;
+  margin-bottom: 6px;
+}
+
+.modal p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.modal::-webkit-scrollbar { width: 6px; }
+.modal::-webkit-scrollbar-track { background: transparent; }
+.modal::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.in-view {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  section, .stats-section, .contact-section { padding-left: 20px; padding-right: 20px; }
+  .apps-grid { grid-template-columns: 1fr; }
+  .stats-grid { gap: 40px; }
+  .nav-links { display: none; }
+  .footer-content { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo">Yp!</a>
+  <div class="nav-links">
+    <a href="#apps">Apps</a>
+    <a href="#about">Über mich</a>
+    <a href="#contact">Kontakt</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <h1>
+    <span class="line"><span>Apps, die</span></span>
+    <span class="line"><span><span class="highlight">bewegen.</span></span></span>
+  </h1>
+
+  <p class="hero-sub">Indie Developer aus Deutschland — ich baue mobile Erlebnisse, von Fitness über Recht bis hin zu Games.</p>
+
+  <div class="hero-cta">
+    <a href="#apps">Meine Projekte ansehen ›</a>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-indicator"><div class="scroll-dot"></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="apps">
+  <div class="section-eyebrow" data-animate>Apps</div>
+  <div class="section-headline" data-animate>Fünf Apps. Zwei Plattformen.</div>
+  <div class="section-sub" data-animate>Jede App löst ein echtes Problem — durchdacht, gestaltet und mit Liebe zum Detail entwickelt.</div>
+
+  <div class="apps-grid">
+
+    <div class="app-card" data-card>
+      <div class="app-icon"><img src="gymtime.png" alt="GymTime"></div>
+      <div class="app-name">GymTime</div>
+      <div class="app-desc">Live-Auslastung deines Fitnessstudios — immer wissen, wann der beste Zeitpunkt zum Trainieren ist.</div>
+      <div class="app-links">
+        <a href="https://apps.apple.com/us/app/gymtime-live-auslastung/id6758906348" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.gymauslastung" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2.5v19c0 .83.91 1.34 1.6.9l15.2-9.5c.67-.42.67-1.38 0-1.8L5.6 1.6C4.91 1.16 4 1.67 4 2.5z"/></svg>
+          Google Play
+        </a>
+      </div>
+    </div>
+
+    <div class="app-card" data-card>
+      <div class="app-icon"><img src="tatbestandskatalog.png" alt="Tatbestandskatalog"></div>
+      <div class="app-name">Tatbestandskatalog</div>
+      <div class="app-desc">Der komplette Bußgeldkatalog in deiner Tasche — schnell, übersichtlich und immer aktuell.</div>
+      <div class="app-links">
+        <a href="https://apps.apple.com/us/app/tatbestandskatalog/id6473509923" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.yp.tatbestandskatalog" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 2.5v19c0 .83.91 1.34 1.6.9l15.2-9.5c.67-.42.67-1.38 0-1.8L5.6 1.6C4.91 1.16 4 1.67 4 2.5z"/></svg>
+          Google Play
+        </a>
+      </div>
+    </div>
+
+    <div class="app-card" data-card>
+      <div class="app-icon"><img src="plantmates.png" alt="PlantMates"></div>
+      <div class="app-name">PlantMates</div>
+      <div class="app-desc">Dein persönlicher Pflanzen-Assistent — Pflege-Erinnerungen und Tipps für grüne Daumen.</div>
+      <div class="app-links">
+        <a href="https://apps.apple.com/us/app/plantmates-plants-care/id6757171443" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+      </div>
+    </div>
+
+    <div class="app-card" data-card>
+      <div class="app-icon"><img src="tiletap.png" alt="TileTap"></div>
+      <div class="app-name">TileTap</div>
+      <div class="app-desc">Das süchtig machende Tile-Matching-Spiel — teste deine Reflexe und knacke den Highscore.</div>
+      <div class="app-links">
+        <a href="https://apps.apple.com/us/app/tiletap/id1672010976" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+      </div>
+    </div>
+
+    <div class="app-card" data-card>
+      <div class="app-icon"><img src="behindertenparkplatz.png" alt="Behindertenparkplatz Berlin"></div>
+      <div class="app-name">Behindertenparkplatz Berlin</div>
+      <div class="app-desc">Finde schnell und einfach Behindertenparkplätze in Berlin — übersichtlich auf einer Karte.</div>
+      <div class="app-links">
+        <a href="https://apps.apple.com/us/app/behindertenparkplatz-berlin/id6756296142" target="_blank" class="store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<div class="stats-section">
+  <div class="stats-grid">
+    <div class="stat" data-animate>
+      <div class="stat-number" data-count="5">0</div>
+      <div class="stat-label">Veröffentlichte Apps</div>
+    </div>
+    <div class="stat" data-animate>
+      <div class="stat-number" data-count="2">0</div>
+      <div class="stat-label">Plattformen</div>
+    </div>
+    <div class="stat" data-animate>
+      <div class="stat-number">∞</div>
+      <div class="stat-label">Leidenschaft</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<section id="about">
+  <div class="about-content">
+    <div class="section-eyebrow" data-animate>Über mich</div>
+    <div class="section-headline" data-animate>Hallo, ich bin <span style="background:linear-gradient(90deg,#2997ff,#5ac8fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Yp!</span></div>
+    <p class="about-text" data-animate>
+      Ich bin <strong>Indie App Developer</strong> aus Deutschland und baue <em>mobile Apps</em>, die echte Probleme lösen. Von Fitness über Recht bis hin zu Games — ich liebe es, Ideen in <strong>polierte Produkte</strong> zu verwandeln.
+    </p>
+  </div>
+</section>
+
+<div class="tech-strip">
+  <div class="tech-track">
+    <span class="tech-item">iOS</span><span class="tech-item">Android</span><span class="tech-item">Swift</span><span class="tech-item">Flutter</span><span class="tech-item">Mobile Design</span><span class="tech-item">App Store</span><span class="tech-item">Google Play</span><span class="tech-item">UI/UX</span>
+    <span class="tech-item">iOS</span><span class="tech-item">Android</span><span class="tech-item">Swift</span><span class="tech-item">Flutter</span><span class="tech-item">Mobile Design</span><span class="tech-item">App Store</span><span class="tech-item">Google Play</span><span class="tech-item">UI/UX</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="contact-section" id="contact">
+  <div class="section-eyebrow" data-animate>Kontakt</div>
+  <div class="section-headline" data-animate>Bereit für das nächste Projekt?</div>
+  <div class="section-sub" data-animate>Du hast eine Idee oder willst zusammenarbeiten? Lass uns reden.</div>
+  <a href="mailto:developeryp1@gmail.com" class="email-btn" data-animate>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg>
+    developeryp1@gmail.com
+  </a>
+</div>
+
+<footer>
+  <div class="footer-content">
+    <span class="footer-logo">Yp!</span>
+    <div class="footer-links">
+      <a href="#" onclick="openModal('impressum'); return false;">Impressum</a>
+      <a href="#" onclick="openModal('datenschutz'); return false;">Datenschutz</a>
+    </div>
+    <span class="footer-text">© 2025 Yp! — Mit ♥ in Deutschland gebaut</span>
+  </div>
+</footer>
+
+<!-- Impressum Modal -->
+<div class="modal-overlay" id="impressum" onclick="closeModal(event, 'impressum')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal(event, 'impressum')">✕</button>
+    <h2>Impressum</h2>
+    <p>Angaben gemäß § 5 DDG</p>
+    <h3>Verantwortlich</h3>
+    <p>
+      Yacouba Pfälzner<br>
+      Ehrenbergstraße 17<br>
+      14195 Berlin<br>
+      Deutschland
+    </p>
+    <h3>Kontakt</h3>
+    <p>
+      E-Mail: developeryp1@gmail.com
+    </p>
+    <h3>Haftungsausschluss</h3>
+    <p>Die Inhalte dieser Website wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.</p>
+    <h3>Links</h3>
+    <p>Diese Website enthält Links zu externen Websites Dritter, auf deren Inhalte kein Einfluss besteht. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich.</p>
+  </div>
+</div>
+
+<!-- Datenschutz Modal -->
+<div class="modal-overlay" id="datenschutz" onclick="closeModal(event, 'datenschutz')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal(event, 'datenschutz')">✕</button>
+    <h2>Datenschutzerklärung</h2>
+
+    <h3>1. Verantwortlicher</h3>
+    <p>
+      Yacouba Pfälzner<br>
+      Ehrenbergstraße 17, 14195 Berlin<br>
+      E-Mail: developeryp1@gmail.com
+    </p>
+
+    <h3>2. Allgemeines zur Datenverarbeitung</h3>
+    <p>Diese Website wird als statische Seite betrieben. Es werden grundsätzlich keine personenbezogenen Daten erhoben, gespeichert oder verarbeitet, sofern du nicht selbst aktiv Daten übermittelst (z.B. per E-Mail).</p>
+
+    <h3>3. Hosting</h3>
+    <p>Diese Website wird über GitHub Pages (GitHub Inc., 88 Colin P Kelly Jr St, San Francisco, CA 94107, USA) gehostet. Der Hoster erhebt in sogenannten Logfiles folgende Daten, die dein Browser übermittelt: IP-Adresse, Datum und Uhrzeit der Anfrage, Zeitzonendifferenz zur GMT, Inhalt der Anforderung, HTTP-Statuscode, übertragene Datenmenge, Website, von der die Anforderung kommt, und Informationen zu Browser und Betriebssystem. Dies ist erforderlich, um die Website anzuzeigen, und dient der Sicherheit und Stabilität. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Weitere Informationen findest du in der <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" style="color:var(--blue);">Datenschutzerklärung von GitHub</a>.</p>
+
+    <h3>4. Externe Links</h3>
+    <p>Diese Website verlinkt auf den Apple App Store und den Google Play Store. Beim Klick auf diese Links gelten die Datenschutzbestimmungen von Apple bzw. Google.</p>
+
+    <h3>5. Kontaktaufnahme per E-Mail</h3>
+    <p>Wenn du per E-Mail Kontakt aufnimmst, werden deine Angaben zur Bearbeitung der Anfrage gespeichert. Eine Weitergabe an Dritte findet nicht statt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b bzw. f DSGVO.</p>
+
+    <h3>6. Deine Rechte</h3>
+    <p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Bei Beschwerden kannst du dich an die zuständige Aufsichtsbehörde wenden.</p>
+
+    <h3>7. Cookies</h3>
+    <p>Diese Website verwendet keine Cookies und keine Tracking-Tools.</p>
+  </div>
+</div>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.transition = 'opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1), transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
+      entry.target.classList.add('in-view');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
+
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      document.querySelectorAll('[data-card]').forEach((card, i) => {
+        setTimeout(() => {
+          card.style.transition = 'opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1), transform 0.7s cubic-bezier(0.25, 1, 0.5, 1), background 0.4s, border-color 0.4s';
+          card.classList.add('in-view');
+        }, i * 100);
+      });
+      cardObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.05 });
+
+const firstCard = document.querySelector('[data-card]');
+if (firstCard) cardObserver.observe(firstCard);
+
+const countObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.dataset.count);
+      if (!target) return;
+      let current = 0;
+      const timer = setInterval(() => {
+        current += target / 25;
+        if (current >= target) { el.textContent = target; clearInterval(timer); }
+        else el.textContent = Math.floor(current);
+      }, 40);
+      countObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Modal open/close
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(event, id) {
+  document.getElementById(id).classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.active').forEach(m => {
+      m.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  }
+});
+</script>
+
+</body>
+</html>
