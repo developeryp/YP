@@ -423,6 +423,31 @@ section {
   margin: 0 auto;
 }
 
+.email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: rgba(41, 151, 255, 0.1);
+  border: 0.5px solid rgba(41, 151, 255, 0.25);
+  border-radius: 980px;
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.email-btn:hover {
+  background: rgba(41, 151, 255, 0.18);
+  border-color: rgba(41, 151, 255, 0.4);
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(41, 151, 255, 0.12);
+}
+
 /* ===== FOOTER ===== */
 footer {
   padding: 20px 24px;
@@ -624,6 +649,10 @@ footer {
   <div class="section-eyebrow" data-animate>Kontakt</div>
   <div class="section-headline" data-animate>Bereit für das nächste Projekt?</div>
   <div class="section-sub" data-animate>Du hast eine Idee oder willst zusammenarbeiten? Lass uns reden.</div>
+  <a href="mailto:developeryp1@gmail.com" class="email-btn" data-animate>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg>
+    developeryp1@gmail.com
+  </a>
 </div>
 
 <footer>
